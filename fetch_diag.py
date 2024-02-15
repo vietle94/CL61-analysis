@@ -6,12 +6,15 @@ import xarray as xr
 file_path = glob.glob("G:\CloudnetData\Kenttarova\CL61\Raw/live_*.nc")
 file_save = "G:\CloudnetData\Kenttarova\CL61\Diag/"
 
-for file in file_path:
+for file in file_path[31280:]:
     print(file)
     file_name = file.split('.')[0].split('\\')[-1]
-
-    df_diag = xr.open_dataset(file, group='diagnostics')
-    df = xr.open_dataset(file)
+    try:
+        df_diag = xr.open_dataset(file, group='diagnostics')
+        df = xr.open_dataset(file)
+    except OSError:
+        print('Bad file')
+        continue
     df = df.swap_dims({'profile': 'time'})
     df = df.isel(range=slice(25, -700))
 
