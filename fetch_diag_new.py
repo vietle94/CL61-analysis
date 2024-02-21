@@ -17,7 +17,7 @@ for file in file_path[[i for i, x in enumerate(file_path) if '20230621' in x][0]
         print('Bad file')
         continue
     # df = df.swap_dims({'profile': 'time'})
-    df = df.isel(range=slice(25, -700))
+    df = df.isel(range=slice(25, None))
 
     co = df['p_pol']/(df['range']**2)
     cross = df['x_pol']/(df['range']**2)
