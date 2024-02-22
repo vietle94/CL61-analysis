@@ -8,17 +8,27 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 myFmt = mdates.DateFormatter('%H:%M')
 
+# %%
+noise = pd.read_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/noise.csv")
+diag = pd.read_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/diag.csv")
+monitoring = pd.read_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/monitoring.csv")
+status = pd.read_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/status.csv")
 
 # %%
-noise_path = glob.glob("G:\CloudnetData\Kenttarova\CL61\Raw/*_noise.csv")
-diag_path = glob.glob("G:\CloudnetData\Kenttarova\CL61\Raw/*_diag.csv")
-
-noise = pd.concat([pd.read_csv(x) for x in noise_path], ignore_index=True)
-diag = pd.concat([pd.read_csv(x) for x in diag_path], ignore_index=True)
+noise['datetime'] = pd.to_datetime(noise['datetime'])
+diag['datetime'] = pd.to_datetime(diag['datetime'])
+monitoring['datetime'] = pd.to_datetime(monitoring['datetime'])
+status['datetime'] = pd.to_datetime(status['datetime'])
 
 # %%
-noise['datetime'] = pd.to_datetime(noise['datetime'], format='ISO8601')
-diag['datetime'] = pd.to_datetime(diag['datetime'], format='ISO8601')
+fig, ax = plt.subplots(2, 2, constrained_layout=True,
+                       sharex=True, figsize=(12, 6))
+for ax_, variable in zip(ax.flatten(), noise.columns[1:].values):
+    ax_.plot(noise['datetime'], noise[variable], '.')
+    ax_.set_ylabel(variable)
+    ax_.grid()
+fig.savefig(r"G:\CloudnetData\Kenttarova\CL61\Summary/noise.png",
+            dpi=600)
 
 # %%
 fig, ax = plt.subplots(7, 5, constrained_layout=True,
@@ -28,19 +38,52 @@ for ax_, variable in zip(ax.flatten()[:4], noise.columns[1:].values):
     ax_.plot(noise['datetime'], noise[variable], '.')
     ax_.set_ylabel(variable)
     ax_.grid()
-    ax_.xaxis.set_major_formatter(myFmt)
 
 for ax_, variable in zip(ax.flatten()[4:], diag.columns[:-1].values):
     ax_.plot(diag['datetime'], diag[variable], '.')
     ax_.set_ylabel(variable)
     ax_.grid()
-    ax_.xaxis.set_major_formatter(myFmt)
+
+fig.savefig(r"G:\CloudnetData\Kenttarova\CL61/Summary/noise_diag.png", dpi=600)
+
+# %%
+fig, ax = plt.subplots(4, 4, constrained_layout=True,
+                       sharex=True, figsize=(19, 9))
+
+for ax_, variable in zip(ax.flatten()[:4], noise.columns[1:].values):
+    ax_.plot(noise['datetime'], noise[variable], '.')
+    ax_.set_ylabel(variable)
+    ax_.grid()
+
+for ax_, variable in zip(ax.flatten()[4:], monitoring.columns[:-1].values):
+    ax_.plot(monitoring['datetime'], monitoring[variable], '.')
+    ax_.set_ylabel(variable)
+    ax_.grid()
+
+fig.savefig(r"G:\CloudnetData\Kenttarova\CL61/Summary/noise_monitoring.png", dpi=600)
+
+# %%
+fig, ax = plt.subplots(4, 4, constrained_layout=True,
+                       sharex=True, figsize=(19, 9))
+
+for ax_, variable in zip(ax.flatten()[:4], noise.columns[1:].values):
+    ax_.plot(noise['datetime'], noise[variable], '.')
+    ax_.set_ylabel(variable)
+    ax_.grid()
+
+for ax_, variable in zip(ax.flatten()[4:], status.columns[:-1].values):
+    ax_.plot(status['datetime'], status[variable], '.')
+    ax_.set_ylabel(variable)
+    ax_.grid()
+
+fig.savefig(r"G:\CloudnetData\Kenttarova\CL61/Summary/noise_status.png", dpi=600)
 
 # %%
 df_merged = noise.merge(diag).iloc[:, 1:]
-df_normalized = (df_merged-df_merged.mean())/df_merged.std()
-corr = df_normalized.corr()
+corr = df_merged.corr()
 
 # %%
-fig, ax = plt.subplots(figsize=(29, 19))
+fig, ax = plt.subplots(figsize=(16, 9))
 sns.heatmap(corr, ax=ax, cmap='RdBu', center=0, vmin=-0.6, vmax=0.6)
+fig.savefig(r"G:\CloudnetData\Kenttarova\CL61/Summary/noise_heatmap.png", dpi=600,
+            bbox_inches='tight')
