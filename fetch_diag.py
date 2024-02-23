@@ -2,6 +2,7 @@ import glob
 import numpy as np
 import pandas as pd
 import xarray as xr
+import os
 
 file_path = glob.glob("G:\CloudnetData\Kenttarova\CL61\Raw/live_*.nc")
 file_save = "G:\CloudnetData\Kenttarova\CL61\Diag/"
@@ -9,6 +10,10 @@ file_save = "G:\CloudnetData\Kenttarova\CL61\Diag/"
 for file in file_path[:[i for i, x in enumerate(file_path) if '20230621' in x][0]]:
     print(file)
     file_name = file.split('.')[0].split('\\')[-1]
+    check_file = file_save + file_name + '_noise.csv'
+    if os.path.isfile(check_file):
+        print('yes')
+        continue
     try:
         df_diag = xr.open_dataset(file, group='diagnostics')
         df = xr.open_dataset(file)
