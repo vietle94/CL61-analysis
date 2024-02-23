@@ -1,56 +1,53 @@
-import glob
 import numpy as np
 import pandas as pd
-import xarray as xr
-import netCDF4
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from matplotlib.colors import LogNorm
+import os
 myFmt = mdates.DateFormatter('%H:%M')
 
 # %%
 noise = pd.read_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/noise.csv")
+diag = pd.read_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/diag.csv")
+monitoring = pd.read_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/monitoring.csv")
 noise['datetime'] = pd.to_datetime(noise['datetime'])
+diag['datetime'] = pd.to_datetime(diag['datetime'])
+monitoring['datetime'] = pd.to_datetime(monitoring['datetime'])
 
 # %%
-file_path = glob.glob(r"G:\CloudnetData\Kenttarova\CL61\Processed/*.nc")
-file_path = [x for x in file_path if '2023' in x]
-
-for file in file_path:
-    print(file)
-    df = xr.open_dataset(file)
-    df = df.swap_dims({'profile': 'time'})
-
-    noise_ = noise[(noise['datetime'] > df.time.min().values) &
-                   (noise['datetime'] < df.time.max().values)]
-
-    fig, ax = plt.subplots(3, 2, sharex=True, figsize=(12, 9),
-                           constrained_layout=True)
-    p = ax[0, 0].pcolormesh(df['time'].values, df['range'], df['p_pol'].T,
-                            norm=LogNorm(vmin=1e-7, vmax=1e-4))
-    fig.colorbar(p, ax=ax[0, 0])
-    p = ax[0, 1].pcolormesh(df['time'].values, df['range'], df['x_pol'].T,
-                            norm=LogNorm(vmin=1e-7, vmax=1e-4))
-    fig.colorbar(p, ax=ax[0, 1])
-
-    ax[1, 0].plot(noise_['datetime'], noise_['co_mean'], '.')
-    ax[1, 0].set_ylabel('co_mean')
-    ax[1, 1].plot(noise_['datetime'], noise_['cross_mean'], '.')
-    ax[1, 1].set_ylabel('cross_mean')
-
-    ax[2, 0].plot(noise_['datetime'], noise_['co_std'], '.')
-    ax[2, 0].set_ylabel('co_std')
-
-    ax[2, 1].plot(noise_['datetime'], noise_['cross_std'], '.')
-    ax[2, 1].set_ylabel('cross_std')
-
-    for ax_ in ax.flatten():
+df = noise.merge(diag)
+df = df[['datetime', 'co_mean', 'co_std', 'cross_mean', 'cross_std',
+         'IsolDC_DC(PFB)', 'clomenvironmentalmsensormenvmtemperature',
+         'clomenvironmentalmsensormenvmhumidity', 'Window_heater_NTC']]
+for id, grp in df.groupby(df['datetime'].dt.date):
+    date_save = np.datetime_as_string(grp.datetime.values[0], 'D')
+    fig, ax = plt.subplots(2, 4, constrained_layout=True,
+                           sharex=True, figsize=(16, 7))
+    for ax_, variable in zip(ax.flatten(), grp.columns[1:].values):
+        ax_.plot(grp['datetime'], grp[variable], '.')
+        ax_.set_ylabel(variable)
         ax_.xaxis.set_major_formatter(myFmt)
-
-    for ax_ in ax.flatten()[2:]:
+        ax_.xaxis.set_major_locator(mdates.HourLocator([0, 6, 12, 18, 24]))
         ax_.grid()
 
-    date_save = np.datetime_as_string(df.time.min().values, 'D')
-    fig.savefig(r"G:\CloudnetData\Kenttarova\CL61\Img/" + date_save + '_noise.png',
+    fig.savefig(r"G:\CloudnetData\Kenttarova\CL61\Img/" + date_save + '_noise_diag.png',
                 dpi=600)
+    print('Done')
+    plt.close('all')
+
+# %%
+df = noise.merge(monitoring)
+df = df.drop(['internal_pressure', 'background_radiance', 'internal_humidity'], axis=1)
+for id, grp in df.groupby(df['datetime'].dt.date):
+    date_save = np.datetime_as_string(grp.datetime.values[0], 'D')
+    fig, ax = plt.subplots(3, 4, constrained_layout=True,
+                           sharex=True, figsize=(16, 7))
+    for ax_, variable in zip(ax.flatten(), grp.columns[1:].values):
+        ax_.plot(grp['datetime'], grp[variable], '.')
+        ax_.set_ylabel(variable)
+        ax_.xaxis.set_major_formatter(myFmt)
+        ax_.xaxis.set_major_locator(mdates.HourLocator([0, 6, 12, 18, 24]))
+        ax_.grid()
+    fig.savefig(r"G:\CloudnetData\Kenttarova\CL61\Img/" + date_save + '_noise_diag.png',
+                dpi=600)
+    print('Done')
     plt.close('all')
