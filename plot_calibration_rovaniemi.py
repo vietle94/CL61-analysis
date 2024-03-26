@@ -135,3 +135,62 @@ for val, ax_ in zip(['background_radiance', 'internal_temperature',
     ax_.axvspan(pd.to_datetime('20240311 095500'), pd.to_datetime('20240311 141000'), facecolor='gray',
                     alpha=0.3)
 fig.savefig(file_save + 'monitoring.png', dpi=600)
+
+# %% Temperature dependence
+df_ = df.sel(time=slice(pd.to_datetime('20240311 095500'),
+                        pd.to_datetime('20240311 141000')))
+# df_ = df
+ppol = df_.p_pol/(df_.range**2)
+xpol = df_.x_pol/(df_.range**2)
+
+# %%
+df_monitoring_ = df_monitoring.sel(time=slice(pd.to_datetime('20240311 095500'),
+                        pd.to_datetime('20240311 141000')))
+
+# %%
+df_total = xr.concat([df_.resample(time='1min').mean(),
+                      df_monitoring_.resample(time='1min').mean()], dim='time')
+
+ppol = df_total.p_pol/(df_total.range**2)
+xpol = df_total.x_pol/(df_total.range**2)
+
+# %%
+fig, ax = plt.subplots(1, 2, sharey=True, constrained_layout=True,
+                       figsize=(9, 4))
+for lab, grp in df_total.groupby_bins("internal_temperature", [19, 21, 23]):
+    print(lab)
+    ppol = grp.p_pol/(grp.range**2)
+    xpol = grp.x_pol/(grp.range**2)
+    
+    ax[0].plot(ppol.mean(dim='time'), ppol.range, '.')
+    ax[0].set_xlim([-1e-13, 1e-13])
+    ax[0].set_xlabel(r"$\mu_{ppol}$")
+  
+    ax[1].plot(xpol.mean(dim='time'), xpol.range, '.')
+    ax[1].set_xlim([-1e-13, 1e-13])
+    ax[1].set_xlabel(r"$\mu_{xpol}$")
+    
+for ax_ in ax.flatten():
+    ax_.grid()
+    
+# %%
+fig, ax = plt.subplots(1, 2, sharey=True, constrained_layout=True,
+                       figsize=(9, 4))
+
+ppol = grp.p_pol/(grp.range**2)
+xpol = grp.x_pol/(grp.range**2)
+
+ax[0].plot(ppol.mean(dim='time'), ppol.range, '.')
+ax[0].set_xlim([-1e-9, 1e-9])
+ax[0].set_xlabel(r"$\mu_{ppol}$")
+  
+ax[1].plot(xpol.mean(dim='time'), xpol.range, '.')
+ax[1].set_xlim([-1e-9, 1e-9])
+ax[1].set_xlabel(r"$\mu_{xpol}$")
+    
+for ax_ in ax.flatten():
+    ax_.grid()
+    
+# %%
+grp['time'].values
+
