@@ -30,124 +30,67 @@ depo_case = xpol_case/ppol_case
 depo_case_std = np.abs(depo_case) * np.sqrt((xpol_case_std/xpol_case)**2 + (ppol_case_std/ppol_case)**2)
 
 # %%
+df_case_ = df_case_.sel(range=slice(0, 1000))
+fft_depo = df_case_.linear_depol_ratio.T
+fft_depo = np.fft.fft(fft_depo.values)/fft_depo.size
+fft_depo = np.fft.fftshift(fft_depo, axes=-1)
 
-fig, ax = plt.subplots()
-ax.plot(df_case_.time, (df_case_.sel(range=100, method='nearest')['x_pol'])/(df_case_.sel(range=100, method='nearest')['p_pol']))
-ax.set_ylim([-0.005, 0])
+fft_ppol = df_case_.p_pol.T
+fft_ppol = np.fft.fft(fft_ppol.values)/fft_ppol.size
+fft_ppol = np.fft.fftshift(fft_ppol, axes=-1)
 
-# %% 1d fft
-from scipy.fft import rfft, rfftfreq
-dep = (df_case_.sel(range=100, method='nearest')['x_pol'])/(df_case_.sel(range=100, method='nearest')['p_pol'])
-yf = rfft(dep.values)
-xf = rfftfreq(dep.values.size, 10)
+fft_xpol = df_case_.x_pol.T
+fft_xpol = np.fft.fft(fft_xpol.values)/fft_xpol.size
+fft_xpol = np.fft.fftshift(fft_xpol, axes=-1)
 
-yf = np.abs(yf)/dep.values.size
-yf[1:yf.size] = 2*yf[1:yf.size]
-
-fig, ax = plt.subplots()
-ax.plot(xf, yf, '.')
-# ax.set_ylim([0, 0.001])
-
-# %%
-temp = df_case_.linear_depol_ratio.sel(range=slice(0, 400)).T
-FS = np.fft.fft2(temp)/temp.size
-fshift = np.fft.fftshift(FS)
-
-freqx = np.fft.fftfreq(temp.shape[1], d=10)
+freqx = np.fft.fftfreq(fft_depo.shape[1], d=10)
 freqx = np.fft.fftshift(freqx)
-# freqx[freqx!=0] = 1/(freqx[freqx!=0])
-
-freqy = np.fft.fftfreq(temp.shape[0], d=5)
-freqy = np.fft.fftshift(freqy)
-# freqy[freqy!=0] = 1/(freqy[freqy!=0])
 
 # %%
-fig, ax = plt.subplots()
-p = ax.pcolormesh(freqx,
-                   freqy,
-                  np.abs(fshift), norm=LogNorm(vmin=1e-5, vmax=1e-3),
-                  shading='nearest')
-fig.colorbar(p, ax=ax)
-ax.set_xticklabels([1, 1/-0.04, 1/-0.02, 'inf', 1/0.02, 1/0.04, 9])
-# %%
-fig, ax = plt.subplots()
-ax.plot(np.abs(fshift)[10, :], '.')
-ax.set_ylim([0, 20])
+fig, ax = plt.subplots(2, 3, figsize=(15, 6), constrained_layout=True,
+                       sharex='row', sharey=True)
+p = ax[0, 0].pcolormesh(df_case_.time, df_case_.range,
+                 df_case_.p_pol.T, shading='nearest',
+                 norm=LogNorm(vmin=1e-7, vmax=1e-5))
+cbar = fig.colorbar(p, ax=ax[0, 0])
+cbar.ax.set_ylabel('ppol')
 
-# %%
-omg = np.abs(fshift)[10, :]
-np.argwhere(omg>17)
+p = ax[0, 1].pcolormesh(df_case_.time, df_case_.range,
+                 df_case_.x_pol.T, shading='nearest',
+                 norm=SymLogNorm(linthresh=1e-10, vmin=-1e-8, vmax=1e-8),
+                 cmap='RdBu')
+cbar = fig.colorbar(p, ax=ax[0, 1])
+cbar.ax.set_ylabel('xpol')
 
-# %%
-fig, ax = plt.subplots(1, 5, sharey=True, figsize=(19, 6), constrained_layout=True)
+p = ax[0, 2].pcolormesh(df_case_.time, df_case_.range,
+                 df_case_.linear_depol_ratio.T, shading='nearest', 
+                 vmin=-0.004, vmax=0.004)
+cbar = fig.colorbar(p, ax=ax[0, 2])
+cbar.ax.set_ylabel('depo')
 
-p = ax[0].pcolormesh(df_case_.time, df_case_.range,
-                 df_case_.linear_depol_ratio.T, vmin=-0.004, vmax=0.004, cmap='RdBu')
-fig.colorbar(p, ax=ax[0])
-ax[0].xaxis.set_major_formatter(myFmt)
-ax[0].set_xlabel('Depo study case')
+p = ax[1, 0].pcolormesh(freqx, df_case_.range,
+                 np.abs(fft_ppol), shading='nearest',
+                 norm=LogNorm(vmin=1e-13, vmax=1e-8))
+cbar = fig.colorbar(p, ax=ax[1, 0])
+cbar.ax.set_ylabel('FFT_Amplitude/2')
 
-for ax_ in ax.flatten():
-    ax_.grid()
-# fig.savefig(file_save + 'study_case.png', dpi=600)
-# %%
-fig, ax = plt.subplots()
-ax.plot(yf, '.')
-ax.set_ylim([0, 0.001])
-ax.set_xlim([0, 100])
+p = ax[1, 1].pcolormesh(freqx, df_case_.range,
+                 np.abs(fft_xpol), shading='nearest',
+                 norm=LogNorm(vmin=1e-13, vmax=1e-10))
+cbar = fig.colorbar(p, ax=ax[1, 1])
+cbar.ax.set_ylabel('FFT_Amplitude/2')
 
-# %%
-fig, ax = plt.subplots(2, 1, figsize=(16, 9), sharex=True, constrained_layout=True)
-p = ax[0].pcolormesh(df_case_.time, df_case_.range,
-                 df_case_.linear_depol_ratio.T, vmin=-0.004, vmax=0.004, cmap='RdBu')
-fig.colorbar(p, ax=ax[0])
-ax[0].xaxis.set_major_formatter(myFmt)
-ax[0].set_ylim([0, 400])
+p = ax[1, 2].pcolormesh(freqx, df_case_.range,
+                 np.abs(fft_depo), shading='nearest',
+                  norm=LogNorm(vmin=1e-7, vmax=1e-4))
+cbar = fig.colorbar(p, ax=ax[1, 2])
+cbar.ax.set_ylabel('FFT_Amplitude/2')
 
-ax[1].plot(dep.time, dep)
-ax[1].set_xlim(right=pd.to_datetime('2023-09-20T22:15:00'))
+for ax_ in ax[0, :]:
+    ax_.xaxis.set_major_formatter(myFmt)
+    
+for ax_ in ax[1, :]:
+    ax_.set_xlabel('Frequency (Hz)')
+fig.savefig(r"G:\CloudnetData\Kenttarova\CL61\Calibration/" + "fft.png",
+            dpi=600, bbox_inches='tight')
 
-# %%
-(54*(1/10/dep.values.size/2))
-1/xf[54]
-1/xf[55]
-xf[54]
-
-# %%
-hW, hH = 600, 300
-hFreq = 10
-
-# Mesh on the square [0,1)x[0,1)
-x = np.linspace( 0, 1, 2*hW+1)     # columns (Width)
-y = np.linspace( 0, 1, 2*hH+1)     # rows (Height)
-
-[X,Y] = np.meshgrid(x,y)
-
-# %%
-A = np.sin(hFreq*2*np.pi*Y)
-
-plt.imshow(A, cmap = 'gray');
-H,W = np.shape(A)
-
-# %%
-
-F = np.fft.fft2(A)/(W*H)                          
-F = np.fft.fftshift(F)
-P = np.abs(F)
-x = np.fft.fftfreq(A.shape[1], 1/A.shape[1])
-# x = np.fft.fftfreq(A.shape[1])
-x = np.fft.fftshift(x)
-y = np.fft.fftfreq(A.shape[0], 1/A.shape[0])
-# y = np.fft.fftfreq(A.shape[0])
-y = np.fft.fftshift(y)
-# %%
-fig, ax = plt.subplots()                            
-ax.pcolormesh(x, y, P)
-ax.set_ylim(-100, 100)
-
-# %%
-plt.imshow(P)
-
-# %%
-np.fft.fftfreq(temp.shape[1])
-np.fft.fftfreq(temp.shape[1], d=10)
