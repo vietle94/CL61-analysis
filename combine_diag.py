@@ -18,3 +18,10 @@ noise.to_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/noise.csv", index=False)
 diag.to_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/diag.csv", index=False)
 monitoring.to_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/monitoring.csv", index=False)
 status.to_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/status.csv", index=False)
+
+# %% new noise
+noise_path = glob.glob("G:\CloudnetData\Kenttarova\CL61\Diag_new/*_noise.csv")
+noise = pd.concat([pd.read_csv(x) for x in noise_path], ignore_index=True)
+
+# %%
+noise.to_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/noise.csv", index=False)
