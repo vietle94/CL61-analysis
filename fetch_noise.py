@@ -11,9 +11,19 @@ file_save = 'G:\CloudnetData\Kenttarova\CL61/Raw_processed/'
 diag_save = 'G:\CloudnetData\Kenttarova\CL61/Diag_new/'
 files = glob.glob('G:\CloudnetData\Kenttarova\CL61/Raw/' + '*.nc')
 
-# %%
+# %% old device software
 for file in files[:[i for i, x in enumerate(files) if '20230621' in x][0]]:
-    df = xr.open_dataset(file)
+    print(file)
+    file_name = file.split('.')[0].split('\\')[-1]
+    check_file = diag_save + file_name + '_noise.csv'
+    if os.path.isfile(check_file):
+        print('yes')
+        continue
+    try:
+        df = xr.open_dataset(file)
+    except OSError:
+        print('Bad file')
+        continue
     df = df.swap_dims({'profile': 'time'})
     df = func.noise_detection(df)
     df.to_netcdf(file_save + os.path.basename(file))
@@ -36,7 +46,7 @@ for file in files[:[i for i, x in enumerate(files) if '20230621' in x][0]]:
     file_name = file.split('.')[0].split('\\')[-1]
     result.to_csv(diag_save + file_name + '_noise.csv', index=False)
     
-# %%
+# %% new device software
 for file in files[[i for i, x in enumerate(files) if '20230621' in x][0]:]:
     df = xr.open_dataset(file)
     df = func.noise_detection(df)
