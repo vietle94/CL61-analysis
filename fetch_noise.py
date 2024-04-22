@@ -8,7 +8,7 @@ import func
 
 # %%
 file_save = 'G:\CloudnetData\Kenttarova\CL61/Raw_processed/'
-diag_save = 'G:\CloudnetData\Kenttarova\CL61/Diag_new/'
+diag_save = 'G:\CloudnetData\Kenttarova\CL61/Diag/'
 files = glob.glob('G:\CloudnetData\Kenttarova\CL61/Raw/' + '*.nc')
 
 # %% old device software
@@ -28,7 +28,9 @@ for file in files[:[i for i, x in enumerate(files) if '20230621' in x][0]]:
     df = func.noise_detection(df)
     df.to_netcdf(file_save + os.path.basename(file))
     df_noise = df.where(df['noise'])
-    grp_range = df_noise[
+    df_noise['p_pol'] = df_noise['p_pol']/(df['range']**2)
+    df_noise['x_pol'] = df_noise['x_pol']/(df['range']**2)
+    grp_range = df_noise[   
         ['p_pol', 'x_pol']].groupby_bins(
             "range", [0, 2000, 4000, 6000, 8000, 10000, 12000, 14000])
             
@@ -52,6 +54,8 @@ for file in files[[i for i, x in enumerate(files) if '20230621' in x][0]:]:
     df = func.noise_detection(df)
     df.to_netcdf(file_save + os.path.basename(file))
     df_noise = df.where(df['noise'])
+    df_noise['p_pol'] = df_noise['p_pol']/(df['range']**2)
+    df_noise['x_pol'] = df_noise['x_pol']/(df['range']**2)
     grp_range = df_noise[
         ['p_pol', 'x_pol']].groupby_bins(
             "range", [0, 2000, 4000, 6000, 8000, 10000, 12000, 14000])
