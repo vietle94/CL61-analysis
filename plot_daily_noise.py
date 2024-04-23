@@ -11,18 +11,21 @@ myFmt = mdates.DateFormatter('%H:%M')
 # %% Plot daily noise
 noise = pd.read_csv(r"G:\CloudnetData\Kenttarova\CL61\Summary/noise.csv")
 noise['datetime'] = pd.to_datetime(noise['datetime'], format='mixed')
+# noise = noise[noise['datetime'] > '20230101'] # why does it take too much time to plot?
 noise = noise[noise['datetime'] > '20230604']
 raw_path = glob.glob(r"G:\CloudnetData\Kenttarova\CL61\Raw_processed/*.nc")
-
+print('finnished loading initial data')
 for date, grp_date in noise.groupby(noise['datetime'].dt.date):
     print(date.strftime("%Y%m%d"))
-    file_name_save = r"G:\CloudnetData\Kenttarova\CL61\Img_new2/" +\
+    file_name_save = r"G:\CloudnetData\Kenttarova\CL61\Img/Background/" +\
                 date.strftime("%Y%m%d") + '_noise.png'
     if os.path.isfile(file_name_save):
         print('yes')
         continue
+    print('opening data')
     df = xr.open_mfdataset(
         [x for x in raw_path if date.strftime("%Y%m%d") in x])
+    print('plotting')
     fig, ax = plt.subplots(
         4, 2, constrained_layout=True, figsize=(12, 8),
         sharex=True, sharey='row')
