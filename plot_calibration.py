@@ -7,15 +7,249 @@ import glob
 import pywt
 from matplotlib.colors import LogNorm, SymLogNorm
 import xarray as xr
+import func
 myFmt = mdates.DateFormatter('%H:%M')
 
-# %%
-file_path = glob.glob("G:\CloudnetData\Kenttarova\CL61\Raw/live_2024030[5-6]*.nc")
-file_save = "G:\CloudnetData\Kenttarova\CL61\Calibration/"
-
-# %%
+# %% Kenttarova ######################################
+file_path = glob.glob(r"G:\CloudnetData\Kenttarova\CL61\Raw/live_20240304*.nc")
+save_path = r"G:\CloudnetData\Calibration\Kenttarova\20240304/"
 df = xr.open_mfdataset(file_path)
 df = df.isel(range=slice(1, None))
+t1 = pd.to_datetime('20240304 125700')
+t2 = pd.to_datetime('20240304 150900')
+df_ = df.sel(time=slice(t1, t2))
+
+func.plot_calibration(df_,
+                      save_path=save_path,
+                      time_mean_lim=[-3e-14, 3e-14])
+
+# %%
+df_monitoring = xr.open_mfdataset(file_path, group='monitoring')
+df_monitoring_ = df_monitoring.sel(time=slice(t1, t2))
+
+fig, ax = plt.subplots(2, 2, sharex=True, figsize=(9, 6),
+                       constrained_layout=True)
+for val, ax_ in zip(['background_radiance', 'internal_temperature',
+            'laser_temperature', 'transmitter_enclosure_temperature'],
+                    ax.flatten()):
+    ax_.plot(df_monitoring_['time'], df_monitoring_[val], '.')
+    ax_.set_ylabel(val)
+    ax_.xaxis.set_major_formatter(myFmt)
+    ax_.grid()
+    fig.savefig(save_path + "monitoring.png", dpi=600)
+    
+# %% Kenttarova ######################################
+file_path = glob.glob(r"G:\CloudnetData\Kenttarova\CL61\Raw/live_2024030[5-6]*.nc")
+save_path = r"G:\CloudnetData\Kenttarova\CL61\Calibration/"
+df = xr.open_mfdataset(file_path)
+df = df.isel(range=slice(1, None))
+t1 = pd.to_datetime('20240305 131500')
+t2 = pd.to_datetime('20240306 103800')
+df_ = df.sel(time=slice(t1, t2))
+
+func.plot_calibration(df_,
+                      save_path=save_path,
+                      time_mean_lim=[-3e-14, 3e-14])
+
+# %%
+df_monitoring = xr.open_mfdataset(file_path, group='monitoring')
+df_monitoring_ = df_monitoring.sel(time=slice(t1, t2))
+
+fig, ax = plt.subplots(2, 2, sharex=True, figsize=(9, 6),
+                       constrained_layout=True)
+for val, ax_ in zip(['background_radiance', 'internal_temperature',
+            'laser_temperature', 'transmitter_enclosure_temperature'],
+                    ax.flatten()):
+    ax_.plot(df_monitoring_['time'], df_monitoring_[val], '.')
+    ax_.set_ylabel(val)
+    ax_.xaxis.set_major_formatter(myFmt)
+    ax_.grid()
+    
+# %% Kenttarova #########################################
+file_path = glob.glob(r"G:\CloudnetData\Kenttarova\CL61\Raw/live_20230926*.nc")
+save_path = r"G:\CloudnetData\Calibration\Kenttarova\20230926/"
+df = xr.open_mfdataset(file_path)
+df = df.isel(range=slice(1, None))
+t1 = pd.to_datetime('20230926 111500')
+t2 = pd.to_datetime('20230926 161000')
+df_ = df.sel(time=slice(t1, t2))
+
+func.plot_calibration(df_,
+                      save_path=save_path,
+                      time_mean_lim=[-3e-14, 3e-14])
+
+# %%
+df_monitoring = xr.open_mfdataset(file_path, group='monitoring')
+df_monitoring_ = df_monitoring.sel(time=slice(t1, t2))
+
+fig, ax = plt.subplots(2, 2, sharex=True, figsize=(9, 6),
+                       constrained_layout=True)
+for val, ax_ in zip(['background_radiance', 'internal_temperature',
+            'laser_temperature', 'transmitter_enclosure_temperature'],
+                    ax.flatten()):
+    ax_.plot(df_monitoring_['time'], df_monitoring_[val], '.')
+    ax_.set_ylabel(val)
+    ax_.xaxis.set_major_formatter(myFmt)
+    ax_.grid()
+    fig.savefig(save_path + "monitoring.png", dpi=600)
+
+
+# %% Rovaniemi ###################3
+file_path = glob.glob(r"G:\CloudnetData\Rovaniemi\20240311/*.nc")
+save_path = r"G:\CloudnetData\Calibration\Rovaniemi/"
+df = xr.open_mfdataset(file_path)
+df = df.isel(range=slice(1, None))
+t1 = pd.to_datetime('20240311 095700')
+t2 = pd.to_datetime('20240311 140500')
+df_ = df.sel(time=slice(t1, t2))
+
+func.plot_calibration(df_,
+                      save_path=save_path,
+                      time_mean_lim=[-5e-15, 5e-15],
+                      time_std_lim=[4.5e-15, 7.5e-15],
+                      profile_std_lim=[5e-15, 10e-15])
+
+# %% Vehmsmaki ########################3
+file_path = glob.glob(r"G:\CloudnetData\Vehmasmaki\20240411/live_20240411*.nc")
+save_path = r"G:\CloudnetData\Vehmasmaki/"
+df = xr.open_mfdataset(file_path)
+df = df.isel(range=slice(1, None))
+t1 = pd.to_datetime('20240411 090000')
+t2 = pd.to_datetime('20240411 110000')
+df_ = df.sel(time=slice(t1, t2))
+
+func.plot_calibration(df_,
+                      save_path=save_path,
+                      time_mean_lim=[-5e-15, 5e-15],
+                      time_std_lim=[6.5e-15, 9.5e-15],
+                      profile_std_lim=[6e-15, 11e-15])
+
+# %% Vehmsmaki ########################
+file_path = glob.glob(r"G:\CloudnetData\Vehmasmaki\20240528/live_2024052*.nc")
+save_path = r"G:\CloudnetData\Calibration\Vehmasmaki\20240528/"
+df = xr.open_mfdataset(file_path)
+df = df.isel(range=slice(1, None))
+t1 = pd.to_datetime('20240528 092000')
+t2 = pd.to_datetime('20240529 053000')
+df_ = df.sel(time=slice(None, t2))
+
+func.plot_calibration(df_,
+                      save_path=save_path,
+                      time_mean_lim=[-5e-15, 5e-15],
+                      time_std_lim=[6.5e-15, 9.5e-15],
+                      profile_std_lim=[6e-15, 11e-15])
+
+# %% Hyytiala ########################
+file_path = glob.glob(r"G:\CloudnetData\Hyytiala\CL61\Raw\*20231103*.nc")
+save_path = r"G:\CloudnetData\Calibration\Hyytiala\20231103/"
+df = xr.open_mfdataset(file_path)
+df = df.isel(range=slice(1, None))
+t1 = pd.to_datetime('20231103 105000')
+t2 = pd.to_datetime('20231103 123000')
+df_ = df.sel(time=slice(t1, t2))
+
+func.plot_calibration(df_,
+                      save_path=save_path,
+                      time_mean_lim=[-5e-15, 5e-15],
+                      time_std_lim=[8e-15, 11.5e-15],
+                      profile_std_lim=[8e-15, 11.5e-15])
+
+# %% Hyytiala ########################
+file_path = glob.glob(r"G:\CloudnetData\Hyytiala\CL61\Raw\*20240202*.nc")
+save_path = r"G:\CloudnetData\Calibration\Hyytiala\20240202/"
+df = xr.open_mfdataset(file_path)
+df = df.isel(range=slice(1, None))
+t1 = pd.to_datetime('20240202 105000')
+t2 = pd.to_datetime('20240202 125000')
+df_ = df.sel(time=slice(t1, t2))
+
+func.plot_calibration(df_,
+                      save_path=save_path,
+                      time_mean_lim=[-15e-15, 15e-15],
+                      time_std_lim=[1.4e-14, 2.4e-14],
+                      profile_std_lim=[1.4e-14, 2.4e-14])
+
+# %% ##############################
+fig, ax = plt.subplots(figsize=(9, 4))
+p = ax.pcolormesh(df_.time, df_.range,
+              df_.p_pol.T, shading='nearest', cmap='jet',
+              norm=LogNorm(vmin=1e-7, vmax=1e-4))
+ax.xaxis.set_major_formatter(myFmt)
+fig.colorbar(p, ax=ax)
+
+# %%
+temp = (df_.p_pol/df_.range**2).std(dim='time').values
+
+# %%
+fig, ax = plt.subplots(figsize=(9, 4))
+p = ax.pcolormesh(df_.time, df_.range,
+              ppol.T, shading='nearest', cmap='RdBu',
+              norm=SymLogNorm(linthresh=1e-17, vmin=-2e-14, vmax=2e-14))
+ax.xaxis.set_major_formatter(myFmt)
+fig.colorbar(p, ax=ax)
+
+# %%
+ppol_mean_time = ppol.mean(dim='time')
+xpol_mean_time = xpol.mean(dim='time')
+
+# %%
+fig, ax = plt.subplots(1, 2, sharey=True, sharex=True, constrained_layout=True)
+ax[0].plot(ppol_mean_time, ppol_mean_time.range)
+ax[1].plot(xpol_mean_time, xpol_mean_time.range)
+ax[0].set_xlim([-1e-13, 1e-13])
+ax[0].set_ylim([0, 1000])
+for ax_ in ax.flatten():
+    ax_.grid()
+
+# %%
+fig, ax = plt.subplots()
+ax.hist(ppol_mean_time.sel(range=slice(3000, 7000)))
+
+# %%
+ppol_ref_base = ppol_mean_time.sel(range=slice(3000, 15000))
+df_['ppol_ref'] = ppol_mean_time.copy()
+df_['ppol_ref'].loc[dict(range=slice(None, 3000))] = np.random.normal(
+    ppol_ref_base.mean(),
+    ppol_ref_base.std(),
+    ppol_mean_time.sel(range=slice(None, 3000)).size)
+
+xpol_ref_base = xpol_mean_time.sel(range=slice(3000, 15000))
+df_['xpol_ref'] = xpol_mean_time.copy()
+df_['xpol_ref'].loc[dict(range=slice(None, 3000))] = np.random.normal(
+    xpol_ref_base.mean(),
+    xpol_ref_base.std(),
+    xpol_mean_time.sel(range=slice(None, 3000)).size)
+
+# %%
+ppol_correction = (ppol_mean_time)/(df_['ppol_ref'])
+xpol_correction = (xpol_mean_time)/(df_['xpol_ref'])
+
+# %%
+fig, ax = plt.subplots(1, 2)
+ax[0].plot(df_['ppol_ref'], df_.range, label='ref')
+ax[0].plot(ppol_mean_time, df_.range, label='mean')
+ax[1].plot(df_['xpol_ref'], df_.range, label='ref')
+ax[1].plot(xpol_mean_time, df_.range, label='mean')
+
+for ax_ in ax.flatten():
+    ax_.set_xlim([-1e-13, 1e-13])
+    ax_.legend()
+    ax_.set_ylim([0, 2000])
+    ax_.grid()
+
+# %%
+fig, ax = plt.subplots(1, 2)
+ax[0].plot(ppol_correction, df.range)
+ax[1].plot(xpol_correction, df.range)
+
+# %%
+fig, ax = plt.subplots(1, 2, sharex=True, sharey=True, constrained_layout=True)
+ax[0].plot(df['x_pol'].mean(dim='time')/(df['range']**2),
+           df['range'])
+ax[1].plot(df['x_pol'].mean(dim='time')/(df['range']**2)/xpol_correction,
+           df['range'])
+ax[0].set_xlim([-0.5e-11, 1e-11])
+ax[0].set_ylim([0, 2000])
 
 # %%
 df_ = df.sel(time=slice(pd.to_datetime('20240305 000000'),
@@ -82,12 +316,12 @@ xpol_std_time = xpol.sel(time=slice(pd.to_datetime('20240305 131500'), pd.to_dat
 # %%
 fig, ax = plt.subplots(2, 2, sharey=True, constrained_layout=True,
                        figsize=(9, 6))
-ax[0, 0].plot(ppol_mean_time, ppol_mean_time.range, '.')
+ax[0, 0].plot(ppol_mean_time + 1, ppol_mean_time.range, '.')
 ax[0, 0].set_xlim([-1e-13, 1e-13])
 ax[0, 0].set_xlabel(r"$\mu_{ppol}$")
 
 ax[1, 0].plot(ppol_std_time, ppol_std_time.range, '.')
-ax[1, 0].set_xlim([2.5e-14, 4.5e-14])
+ax[1, 0].set_xlim([3e-14, 2e-13])
 ax[1, 0].set_xlabel(r"$\sigma_{ppol}$")
 
 
@@ -96,7 +330,7 @@ ax[0, 1].set_xlim([-1e-13, 1e-13])
 ax[0, 1].set_xlabel(r"$\mu_{xpol}$")
 
 ax[1, 1].plot(xpol_std_time, xpol_std_time.range, '.')
-ax[1, 1].set_xlim([2.5e-14, 4.5e-14])
+ax[1, 1].set_xlim([3e-14, 2e-13])
 ax[1, 1].set_xlabel(r"$\sigma_{xpol}$")
 
 for ax_ in ax.flatten():
@@ -114,21 +348,29 @@ ax[0, 0].set_ylim([0, 500])
 # fig.savefig(file_save + 'ppol_xpol_profile_nearnear.png', dpi=600)
 
 # %%
-df_monitoring = xr.open_mfdataset(file_path, group='monitoring')
+fig, ax = plt.subplots(2, 2, sharey=True, constrained_layout=True,
+                       figsize=(9, 6))
+ax[0, 0].plot(ppol_mean_time, ppol_mean_time.range, '.')
+# ax[0, 0].set_xlim([1-1e-13, 1+1e-13])
+ax[0, 0].set_xlabel(r"$\mu_{ppol}$")
+ax[0, 0].set_xscale('log')
 
+# %%
+df_monitoring = xr.open_mfdataset(file_path, group='monitoring')
+df_monitoring_ = df_monitoring.sel(time=slice(pd.to_datetime('20240305 131500'), pd.to_datetime('20240306 103800')))
 # %%
 fig, ax = plt.subplots(2, 2, sharex=True, figsize=(16, 9),
                        constrained_layout=True)
 for val, ax_ in zip(['background_radiance', 'internal_temperature',
             'laser_temperature', 'transmitter_enclosure_temperature'],
                     ax.flatten()):
-    ax_.plot(df_monitoring['time'], df_monitoring[val])
+    ax_.plot(df_monitoring_['time'], df_monitoring_[val])
     ax_.set_ylabel(val)
     ax_.xaxis.set_major_formatter(myFmt)
     ax_.grid()
     ax_.axvspan(pd.to_datetime('20240305 131100'), pd.to_datetime('20240306 104200'), facecolor='gray',
                     alpha=0.3)
-fig.savefig(file_save + 'monitoring.png', dpi=600)
+# fig.savefig(file_save + 'monitoring.png', dpi=600)
 
 # %%
 df_monitoring_ = df_monitoring.sel(time=slice(pd.to_datetime('20240305 131500'), pd.to_datetime('20240306 103800')))
