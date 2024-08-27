@@ -94,3 +94,27 @@ for ax_ in ax[1, :]:
 fig.savefig(r"G:\CloudnetData\Kenttarova\CL61\Calibration/" + "fft.png",
             dpi=600, bbox_inches='tight')
 
+
+# %%
+df_diag = xr.open_mfdataset(file_path_case, group='monitoring')
+
+# %%
+df_ = df_diag.sel(time=slice(pd.to_datetime('20230920 220000'),
+                        pd.to_datetime('20230920 235900')))
+fft_laser = np.fft.fft(df_.laser_temperature.values)/df_.laser_temperature.size
+fft_laser = np.fft.fftshift(fft_laser)
+freqx = np.fft.fftfreq(fft_laser.size, d=10)
+freqx = np.fft.fftshift(freqx)
+
+# %%
+fig, ax = plt.subplots(2, 1, figsize=(9, 6))
+ax[0].plot(freqx, np.abs(fft_laser))
+ax[0].grid()
+ax[0].set_ylabel('FFT Amplitude/2')
+
+ax[1].plot(df_.time, df_.laser_temperature)
+ax[1].grid()
+ax[1].xaxis.set_major_formatter(myFmt)
+ax[1].set_ylabel('Laser temperature')
+fig.savefig(r"G:\CloudnetData\Kenttarova\CL61\Calibration/" + "fft_laser_temperature.png",
+            dpi=600, bbox_inches='tight')
