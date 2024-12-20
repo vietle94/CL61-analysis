@@ -5,9 +5,9 @@ import io
 import pandas as pd
 
 url = 'https://cloudnet.fmi.fi/api/raw-files'
-pr = pd.period_range(start='2023-06-21',end='2024-12-01', freq='D') 
+pr = pd.period_range(start='2023-01-01',end='2023-12-01', freq='D') 
 
-save_path = r'G:\CloudnetData\Kenttarova\CL61\Diag/'
+save_path = r'G:\CloudnetData\Vehmasmaki\CL61\Diag/'
 for i in pr:
     idate = i.strftime("%Y-%m-%d")
     print(idate)
@@ -16,13 +16,14 @@ for i in pr:
     params = {
         'dateFrom': idate,
         'dateTo': idate,
-        'site': 'kenttarova',
+        'site': 'vehmasmaki',
         'instrument': 'cl61d'
     }
     metadata = requests.get(url, params).json()
     if not metadata:
         continue
-    
+    break
+# %%
     for row in metadata:
         if 'live' in row['filename']:
             print(row['filename'])
@@ -30,7 +31,6 @@ for i in pr:
                 continue
             res = requests.get(row['downloadUrl'])
             break
-
             with io.BytesIO(res.content) as file:
                 try:
                     df_monitoring = xr.open_dataset(file, group='monitoring')
@@ -50,3 +50,16 @@ for i in pr:
     print('saving')
     df_save_monitoring.to_csv(save_path + i.strftime("%Y%m%d") + '_monitoring.csv', index=False)
     df_save_status.to_csv(save_path + i.strftime("%Y%m%d") + '_status.csv', index=False)
+
+# %%
+file = io.BytesIO(res.content)
+df_monitoring = pd.DataFrame([df_monitoring.attrs])
+status = pd.DataFrame([df_status.attrs])
+df_monitoring.Timestamp.astype(float)
+df_monitoring
+
+pd.to_datetime(df_monitoring.Timestamp, unit='s')
+
+df = xr.open_dataset(file)
+df.time
+xr.open_dataset(file, group='diagnostics')

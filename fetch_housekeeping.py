@@ -1,13 +1,12 @@
 import requests
-import os
 import xarray as xr
 import io
 import pandas as pd
-
+import netCDF4
 url = 'https://cloudnet.fmi.fi/api/raw-files'
-pr = pd.period_range(start='2023-06-21',end='2024-11-30', freq='D') 
+pr = pd.period_range(start='2023-01-01',end='2023-12-01', freq='D') 
 
-save_path = r'G:\CloudnetData\Kenttarova\CL61\Diag/'
+save_path = r'G:\CloudnetData\Vehmasmaki\CL61\Diag/'
 for i in pr:
     idate = i.strftime("%Y-%m-%d")
     print(idate)
@@ -15,7 +14,7 @@ for i in pr:
     params = {
         'dateFrom': idate,
         'dateTo': idate,
-        'site': 'kenttarova',
+        'site': 'vehmasmaki',
         'instrument': 'cl61d'
     }
     metadata = requests.get(url, params).json()
@@ -41,4 +40,3 @@ for i in pr:
      
     print('saving')
     df_save.to_csv(save_path + i.strftime("%Y%m%d") + '_diag.csv', index=False)
-

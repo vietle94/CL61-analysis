@@ -64,10 +64,10 @@ labels, handles = zip(*sorted(zip(labels, handles),
 fig.legend(handles, labels, ncol=7, loc = "outside lower right",
            markerscale=10)
 
-ax[0, 0].set_ylim([-2e-6, 2e-6])
-ax[1, 0].set_ylim([-2e-6, 2e-6])
-ax[2, 0].set_ylim([0, 2e-5])
-ax[3, 0].set_ylim([0, 2e-5])
+ax[0, 0].set_ylim([-1e-13, 1e-13])
+ax[1, 0].set_ylim([-1e-13, 1e-13])
+ax[2, 0].set_ylim([0, 1e-12])
+ax[3, 0].set_ylim([0, 1e-12])
 for ax_ in ax.flatten():
     ax_.grid()
     ax_.yaxis.set_tick_params(which='both', labelleft=True)
