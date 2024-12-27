@@ -67,22 +67,30 @@ def fetch_housekeeping_v2(site, start_date, end_date, save_path):
                 if int(row['size']) < 100000:
                     continue
                 res = requests.get(row['downloadUrl'])
-
-                with io.BytesIO(res.content) as file:
-                    try:
-                        df_monitoring = xr.open_dataset(file, group='monitoring')
-                        df_status = xr.open_dataset(file, group='status')
-                    except OSError:
-                        print('Bad file')
-                        continue
-                    monitoring = df_monitoring.to_dataframe().reset_index()
-                    monitoring = monitoring.rename({'time': 'datetime'}, axis=1)
-                    
-                    status = df_status.to_dataframe().reset_index()
-                    status = status.rename({'time': 'datetime'}, axis=1)
-                    
-                    df_save_monitoring = pd.concat([df_save_monitoring, monitoring])
-                    df_save_status = pd.concat([df_save_status, status])
+                while True:
+                    bad_file=False
+                    with io.BytesIO(res.content) as file:
+                        try:
+                            df_monitoring = xr.open_dataset(file, group='monitoring')
+                            df_status = xr.open_dataset(file, group='status')
+                            monitoring = df_monitoring.to_dataframe().reset_index()
+                            monitoring = monitoring.rename({'time': 'datetime'}, axis=1)
+                            
+                            status = df_status.to_dataframe().reset_index()
+                            status = status.rename({'time': 'datetime'}, axis=1)
+                            
+                            df_save_monitoring = pd.concat([df_save_monitoring, monitoring])
+                            df_save_status = pd.concat([df_save_status, status])
+                        except ValueError:
+                            continue
+                        except OSError:
+                            bad_file = True
+                            print('Bad file')
+                            break
+                    break
+                if bad_file:
+                    continue
+                
                         
         print('saving')
         df_save_monitoring.to_csv(save_path + i.strftime("%Y%m%d") + '_monitoring.csv', index=False)
