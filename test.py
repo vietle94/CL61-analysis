@@ -61,3 +61,21 @@ for val in list(df_raw.keys()):
     
 # %%
 df_raw = MFDataset(file_dirs[:10])
+
+# %%
+import requests
+import xarray as xr
+import io
+import pandas as pd
+
+# %%
+for i in range(10):
+    while True:
+        print(i)
+        i += 1
+        if i > 5:
+            break
+        if i < 3:
+            continue
+        break
+# %%

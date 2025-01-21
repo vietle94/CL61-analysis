@@ -2,6 +2,7 @@ import requests
 import xarray as xr
 import io
 import pandas as pd
+import time
 
 def fetch_housekeeping(site, start_date, end_date, save_path):
     url = 'https://cloudnet.fmi.fi/api/raw-files'
@@ -69,8 +70,10 @@ def fetch_housekeeping_v2(site, start_date, end_date, save_path):
                 res = requests.get(row['downloadUrl'])
                 while True:
                     bad_file=False
+                    try_count = 0
                     with io.BytesIO(res.content) as file:
                         try:
+                            try_count += 1
                             df_monitoring = xr.open_dataset(file, group='monitoring')
                             df_status = xr.open_dataset(file, group='status')
                             monitoring = df_monitoring.to_dataframe().reset_index()
@@ -81,7 +84,14 @@ def fetch_housekeeping_v2(site, start_date, end_date, save_path):
                             
                             df_save_monitoring = pd.concat([df_save_monitoring, monitoring])
                             df_save_status = pd.concat([df_save_status, status])
-                        except ValueError:
+                        except ValueError as e:
+                            if try_count > 10:
+                                bad_file = True
+                                print('Bad file')
+                                break
+                            print(e)
+                            print('Trying again')
+                            time.sleep(10)
                             continue
                         except OSError:
                             bad_file = True
